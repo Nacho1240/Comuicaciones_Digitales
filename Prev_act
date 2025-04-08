@@ -1,0 +1,41 @@
+A = 1; %amplitud
+ms = 200; % muestras
+fc = 1000; % frecuencia de la señal
+pc = 1/fc; % periodo de la señal
+fm = 100000; %frecuencia de muestreo
+f_s = 5000; % Hz
+t_s = 1/f_s; % segundos
+tau = 0.5*t_s; % segundos
+d = tau/t_s; % ciclo de trabajo
+pm = 1/fm; % periodo de muestreo
+
+t = (0:ms)*pm; % muestras / periodo de muestreo
+
+m_t = A * sin(2*pi*fc*t);
+
+m_t_inst = zeros(1,length(t));% funcion instantanea
+
+paso = 10; % Cada 10 muestras 
+m_t_inst(1:paso:end) = m_t(1:paso:end);     
+r = floor(t_s / tm); 
+s = floor(tau / tm); 
+s_nat = zeros(1, length(t)); 
+
+for i = 1:length(m_t)
+    if mod(i, r) == 0
+        s_nat(i:i+s) = 1; 
+    end
+end
+s_nat = s_nat(1:length(t));
+m_t_nat = m_t .* s_nat; 
+
+figure;
+plot(t, m_t, 'b'); % Señal original
+hold on;
+plot(t, m_t_nat, 'r'); % Señal muestreada naturalmente
+grid on;
+plot(t, m_t_inst);
+grid on;
+xlabel('Tiempo (s)');
+ylabel('Amplitud');
+legend('Señal original', 'Señal muestreada naturalmente', 'Señal muestrada de forma instantanea');
