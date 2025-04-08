@@ -1,0 +1,24 @@
+% FFT de las tres señales
+N = length(t);
+M_f = abs(fft(m_t) / N);
+M_f_nat = abs(fft(m_t_nat) / N);
+M_f_inst = abs(fft(m_t_inst) / N);
+
+% Vector de frecuencias centrado en cero
+f = linspace(-fm/2, fm/2, N);
+
+% Reordenar el espectro para que esté centrado en cero (DC en el centro)
+M_f = fftshift(M_f);
+M_f_nat = fftshift(M_f_nat);
+M_f_inst = fftshift(M_f_inst);
+
+% Graficar
+figure;
+plot(f, M_f, 'b', 'LineWidth', 1.5); hold on;
+plot(f, M_f_nat, 'r', 'LineWidth', 1.5);
+plot(f, M_f_inst, 'g', 'LineWidth', 1.5);
+xlabel('Frecuencia (Hz)');
+ylabel('Magnitud');
+title('Transformada de Fourier (espectro completo)');
+legend('Original', 'Muestreo natural', 'Muestreo instantáneo');
+grid on;
