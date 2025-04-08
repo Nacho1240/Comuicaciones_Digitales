@@ -1,0 +1,58 @@
+% Parámetros para la señal original
+Fs_cont = 1000;         % Frecuencia de muestreo para la señal continua
+Tfinal = 1;             % Duración en segundos
+t = 0:1/Fs_cont:Tfinal; % Vector de tiempo
+f = 5;                  % Frecuencia de la señal sinusoidal
+m_t = sin(2*pi*f*t);    % Señal original
+
+% Parámetros para el muestreo PAM
+Fs_pam = 50;            % Frecuencia de muestreo PAM
+Ts_pam = 1/Fs_pam;
+
+% Generar m_t_inst (PAM con retención de orden cero)
+pam_sample_indices = round((0:Ts_pam:Tfinal) * Fs_cont) + 1;
+pam_sample_indices = pam_sample_indices(pam_sample_indices <= length(t)); % Asegurar índices válidos
+pam_samples = m_t(pam_sample_indices);
+rep_factor = round(Fs_cont / Fs_pam);
+m_t_inst = repelem(pam_samples, rep_factor);
+m_t_inst = m_t_inst(1:length(t)); % Recortar para igualar la longitud de t
+
+% Generar m_t_nat (PAM muestreado naturalmente como tren de impulsos)
+m_t_nat = zeros(size(t));
+m_t_nat(pam_sample_indices) = pam_samples;
+
+
+% Parámetros PCM
+N = 2; % Número de bits para PCM
+pcm_levels = 2^N; % Total de niveles PCM
+% Cuantizar la señal instantánea usando PCM
+pcm_signal_inst = round((m_t_inst + 1) * (pcm_levels - 1) / 2); % Cuantización
+% Normaliza las señales para que estén en el mismo rango de amplitud (0 a 1)
+m_t_norm = (m_t - min(m_t)) / (max(m_t) - min(m_t));
+m_t_inst_norm = (m_t_inst - min(m_t_inst)) / (max(m_t_inst) - min(m_t_inst));
+pcm_signal_inst_norm = (pcm_signal_inst - min(pcm_signal_inst)) / (max(pcm_signal_inst) - min(pcm_signal_inst));
+% Calcular el error de cuantización para la señal PAM cuantificada (PCM)
+quantization_error_inst = m_t_inst - ((2 * pcm_signal_inst / (pcm_levels - 1)) - 1);
+% Crear una figura para mostrar todas las señales en un mismo gráfico
+figure;
+% Graficar la señal original en azul
+plot(t, m_t_norm, 'b', 'LineWidth', 1.5);
+hold on;
+% Graficar la señal PAM instantánea en rojo
+plot(t, m_t_inst_norm, 'r', 'LineWidth', 1.5);
+% Graficar la señal PAM cuantificada (PCM) en verde (usar marcador 'o' para visualizar los puntos PCM)
+stem(t, pcm_signal_inst_norm, 'g', 'Marker', 'o', 'LineWidth', 1.5);
+% Establecer etiquetas y título del gráfico
+xlabel('Tiempo (s)');
+ylabel('Amplitud Normalizada');
+title('Señal Original, Señal PAM Instantánea y Señal PAM Cuantificada (PCM)');
+legend('Señal Original', 'Señal PAM Instantánea', 'Señal PAM Cuantificada (PCM)');
+grid on;
+% Crear una nueva figura para mostrar el error de cuantización
+figure;
+% Graficar el error de cuantización para la señal PAM cuantificada (PCM)
+plot(t, quantization_error_inst, 'k--', 'LineWidth', 1.5);
+xlabel('Tiempo (s)');
+ylabel('Error de Cuantización');
+title('Error de Cuantización para la Señal PAM Cuantificada (PCM)');
+grid on;
