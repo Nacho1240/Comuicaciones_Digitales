@@ -1,0 +1,39 @@
+% Parámetros
+Rb = 10;        % Tasa de bits (bps)
+fc = 100;       % Frecuencia portadora (Hz)
+fs = 1000;      % Frecuencia de muestreo (Hz)
+t = 0:1/fs:1;   % Vector de tiempo (1 segundo)
+
+% Generar señal modulante m(t) (tren de pulsos)
+bits = [1 0 1 1 0 1 0 0 1]; % Secuencia de bits
+m_t = zeros(1, length(t));
+for i = 1:length(bits)
+    idx = (t >= (i-1)/Rb) & (t < i/Rb);
+    m_t(idx) = bits(i);
+end
+
+% Envolvente compleja g(t)
+A = 1;
+g_t = A * m_t;
+
+% Transformada de Fourier de g(t)
+N = length(g_t);
+f = (-fs/2:fs/N:fs/2-fs/N);
+G_f = fftshift(fft(g_t, N)) / N;
+
+% Graficar
+figure;
+subplot(2,1,1);
+plot(t, g_t);
+title('Envolvente compleja g(t) para ASK');
+xlabel('Tiempo (s)');
+ylabel('Amplitud');
+grid on;
+
+subplot(2,1,2);
+plot(f, abs(G_f));
+title('Espectro de |G(f)|');
+xlabel('Frecuencia (Hz)');
+ylabel('Magnitud');
+xlim([-50, 50]);
+grid on;
